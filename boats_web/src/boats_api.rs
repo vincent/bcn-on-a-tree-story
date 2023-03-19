@@ -1,7 +1,7 @@
 use crate::models::*;
 use reqwasm::{http::Request, Error};
 
-const BASE_URL: &str = "http://localhost:8080";
+const BASE_URL: &str = "/api";
 
 pub async fn fetch_trees(lat: f64, long: f64) -> Result<Vec<Tree>, Error> {
     Request::get(&format!("{BASE_URL}/trees/41.4379546/2.1657465"))
