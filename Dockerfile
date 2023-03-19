@@ -1,6 +1,13 @@
 FROM rust:latest as build
 
-RUN curl https://gist.githubusercontent.com/vincent/4ce2f9f37b1ac846f84c/raw/d9f0977a0db29eefade49ebf1ea4b7e1498d55b2/moveAlong.js
+RUN curl -SL https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.0/clang+llvm-16.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
+ | tar -xJC . && \
+ mv clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04 clang_10 && \
+ echo 'export PATH=/clang_10/bin:$PATH' >> ~/.bashrc && \
+ echo 'export LIBCLANG_PATH=/clang_10/bin' >> ~/.bashrc && \
+ echo 'export LD_LIBRARY_PATH=/clang_10/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+RUN source ~/.bashrc
+
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo install trunk wasm-bindgen-cli
 
