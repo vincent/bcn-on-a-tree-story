@@ -1,12 +1,8 @@
 FROM rust:latest as build
 
-RUN curl -SL https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.0/clang+llvm-16.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
- | tar -xJC . && \
- mv clang+llvm-16.0.0-x86_64-linux-gnu-ubuntu-18.04 clang_16 && \
- echo 'export PATH=/clang_16/bin:$PATH' >> ~/.bashrc && \
- echo 'export LIBCLANG_PATH=/clang_16/bin' >> ~/.bashrc && \
- echo 'export LD_LIBRARY_PATH=/clang_16/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
-RUN source ~/.bashrc
+ARG LIBCLANG_PATH
+RUN test -n "$LIBCLANG_PATH"
+ENV LIBCLANG_PATH $LIBCLANG_PATH
 
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo install trunk wasm-bindgen-cli
