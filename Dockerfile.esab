@@ -1,0 +1,7 @@
+FROM debian:buster-slim
+
+COPY --from=allyouneedisgnu/boats-base /usr/src/boats/boats_api/target/release/boats_api /usr/local/bin/backend
+COPY --from=allyouneedisgnu/boats-base /usr/src/boats/boats_web/dist /usr/local/bin/dist
+
+WORKDIR /usr/local/bin
+CMD ["backend"]

@@ -1,0 +1,62 @@
+# First stage: Build the boats_api project
+FROM debian:buster-slim AS build_api
+
+# Install llvm toolchain
+
+#RUN apt-get update && apt-get install -y curl lsb_release wget add-apt-repository gpg
+#RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+
+RUN apt-get update && apt-get install -y wget curl # apt-key
+#RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+
+RUN echo "deb http://apt.llvm.org/buster/ llvm-toolchain-buster-15 main" >> /etc/apt/sources.list
+RUN echo "deb-src http://apt.llvm.org/buster/ llvm-toolchain-buster-15 main" >> /etc/apt/sources.list
+
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    build-essential \
+    clang-15 clang-tools-15 clang-15-doc libclang-common-15-dev libclang-15-dev libclang1-15 clang-format-15 python3-clang-15 clangd-15 clang-tidy-15 \
+    # libclang-rt-15-dev-wasm32 libclang-rt-15-dev-wasm64 libc++-15-dev-wasm32 libc++abi-15-dev-wasm32 libclang-rt-15-dev-wasm32 libclang-rt-15-dev-wasm64 \
+    patch
+
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH=$PATH:$HOME/.cargo/bin
+
+
+RUN $HOME/.cargo/bin/rustup toolchain add nightly \
+    && $HOME/.cargo/bin/cargo install trunk wasm-bindgen-cli \
+    && $HOME/.cargo/bin/rustup target add wasm32-unknown-unknown
+
+
+# Copy the boats_api project into the container
+WORKDIR /app/boats_api
+COPY boats_api .
+
+ENV PATH=$PATH:$HOME/.cargo/bin
+
+# Build the boats_api project
+RUN $HOME/.cargo/bin/cargo build --release
+
+# Copy the boats_web project into the container
+WORKDIR /app/boats_web
+COPY boats_web .
+
+# Build the boats_web project
+RUN PATH=$PATH:$HOME/.cargo/bin $HOME/.cargo/bin/trunk build --release
+
+# Final stage: Create the production image
+FROM debian:buster-slim
+
+RUN apt-get update && apt-get install -y wget libssl1.1 nginx
+#RUN wget -qO- https://github.com/thedodd/trunk/releases/download/v0.16.0/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xzf-
+
+# Copy the built binaries from the previous stages
+COPY --from=build_api /app/boats_api/target/release/boats_api /usr/local/bin/boats_api
+COPY --from=build_api /app/boats_web/dist /usr/local/share/boats_web
+
+COPY nginx.site.conf /etc/nginx/sites-enabled/boats
+RUN nginx -t && nginx
+
+CMD ["/usr/local/bin/backend"]
