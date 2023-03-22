@@ -81,7 +81,7 @@ async fn main() -> Result<(), DbError> {
     let ds = Datastore::new("file:///database/surreal").await?;
     let ses = Session::for_db("my_ns", "my_db");
 
-    ds.execute("REMOVE TABLE trees;", &ses, None, false).await?;
+    // ds.execute("REMOVE TABLE trees;", &ses, None, false).await?;
 
     let payload: Vec<Row> =
         read_payload_from_file(dbpath).unwrap();
