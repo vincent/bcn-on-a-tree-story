@@ -54,6 +54,7 @@ RUN apt-get update && apt-get install -y wget libssl1.1 nginx
 
 # Copy the built binaries from the previous stages
 COPY --from=build_api /app/boats_api/target/release/boats_api /usr/local/bin/boats_api
+COPY --from=build_api /app/boats_api/target/release/insert /usr/local/bin/boats_insert
 COPY --from=build_api /app/boats_web/dist /usr/local/share/boats_web
 
 RUN rm /etc/nginx/sites-enabled/default

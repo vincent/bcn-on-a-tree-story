@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, error::Error, fs::File, io::BufReader, path::Path};
+use std::{env, collections::BTreeMap, error::Error, fs::File, io::BufReader, path::Path};
 
 use serde::{de, Deserialize, Deserializer};
 use serde_json::Value;
@@ -75,13 +75,16 @@ fn read_payload_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<Row>, Box<dyn E
 
 #[tokio::main]
 async fn main() -> Result<(), DbError> {
-    let ds = Datastore::new("file://../boats_api/database.surreal").await?;
+    let args: Vec<String> = env::args().collect();
+    let dbpath = &args[1];
+
+    let ds = Datastore::new("file:///database/surreal").await?;
     let ses = Session::for_db("my_ns", "my_db");
 
     ds.execute("REMOVE TABLE trees;", &ses, None, false).await?;
 
     let payload: Vec<Row> =
-        read_payload_from_file("C:\\Users\\Vincent\\Downloads\\OD_test_BCN.json").unwrap();
+        read_payload_from_file(dbpath).unwrap();
     for line in payload.iter() {
         let sql = "CREATE trees SET tree_id = $tree_id, position = $pos, name_sci = $name_sci, name_es = $name_es, name_cat = $name_cat, space = $space, district = $district, neighbor = $neighbor, neighbor_id = $neighbor_id;";
         let vars: BTreeMap<String, DbValue> = map![
