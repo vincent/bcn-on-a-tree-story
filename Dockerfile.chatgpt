@@ -58,6 +58,7 @@ COPY --from=build_api /app/boats_web/dist /usr/local/share/boats_web
 
 RUN rm /etc/nginx/sites-enabled/default
 COPY nginx.site.conf /etc/nginx/sites-enabled/boats
-RUN nginx -t && nginx
 
-CMD ["/usr/local/bin/boats_api"]
+ENV ROCKET_LOG=debug
+ENV ROCKET_PORT=81
+CMD service nginx start && /usr/local/bin/boats_api
