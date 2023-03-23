@@ -58,7 +58,7 @@ async fn delete_message(id: String, db: &State<DB>) -> Result<Json<AffectedRows>
 
 #[launch]
 async fn rocket() -> _ {
-    let ds = Arc::new(Datastore::new("file:///database/surreal").await.unwrap());
+    let ds = Arc::new(Datastore::new("file:///database/surreal/surreal").await.unwrap());
     let sesh = Session::for_db("my_ns", "my_db");
 
     let db = DB { ds, sesh };
