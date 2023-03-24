@@ -1,17 +1,36 @@
 use crate::models::*;
-use reqwasm::{http::Request, Error};
+use reqwasm::{http::{Request}, Error};
 
 const BASE_URL: &str = "/api";
 
 pub async fn fetch_trees(lat: f64, long: f64) -> Result<Vec<Tree>, Error> {
-    let lat = 41.379368304896055;
-    let long = 2.1898975212208565;
+    // let lat = 41.379368304896055;
+    // let long = 2.1898975212208565;
     Request::get(&format!("{BASE_URL}/trees/{lat}/{long}"))
         .send()
         .await
         .unwrap()
         .json()
         .await
+}
+
+pub async fn closest(lat: f64, long: f64) -> i32 {
+    // let lat = 41.379368304896055;
+    // let long = 2.1898975212208565;
+    let response = Request::get(&format!("{BASE_URL}/near/{lat}/{long}"))
+        .send()
+        .await;
+    
+    match response {
+        Ok(res) => {
+            let payload = res.json().await; // could be `Error` or `Response` but only parses to `Response`
+            match payload {
+                Ok(j) => j,
+                Err(_e) => 100000,
+            }
+        }
+        Err(_e) => 100000,
+    }
 }
 
 pub async fn fetch_messages(tree_id: &str) -> Result<Vec<Message>, Error> {

@@ -45,6 +45,7 @@ dependencies = [
  "chrono",
  "reqwasm",
  "serde",
+ "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
  "yew",

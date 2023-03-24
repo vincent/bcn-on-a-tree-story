@@ -19,6 +19,7 @@ use crate::{models::Tree, data::random_intro};
 fn app() -> Html {
     let messages = use_reducer(MessageState::default);
     let messages_controller = Rc::new(MessageController::new(messages.clone()));
+    // let proximity = 10000 / messages.proximity.max(1);
 
     let on_create_message = {
         let messages_controller = messages_controller.clone();
@@ -38,6 +39,7 @@ fn app() -> Html {
         let messages_controller = messages_controller.clone();
         Callback::from(move |(lat, long): (f64, f64)| {
             messages_controller.list_trees(lat, long);
+            messages_controller.update_proximity(lat, long);
         })
     };
 
@@ -74,6 +76,7 @@ fn app() -> Html {
 
     html! {
         <div class="container">
+            // <AnimatedTree completion={proximity} />
             <h1>{ "Based On A Tree Story" }</h1>
 
             <Geolocation on_coords_change={on_coords_change} />

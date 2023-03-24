@@ -125,6 +125,20 @@ li>label {
     transition-timing-function: steps(20, start);
 }
 
+/* animation */
+.animated-tree {
+    position: absolute;
+    width: 100vh;
+    left: -81px;
+    bottom: -150px;
+    opacity: .5;
+}
+.animated-tree-path {
+    stroke-dasharray: 1 100000;
+    stroke: black;
+    stroke-width: 2;
+    fill: none;
+}
 
 /* trees */
 .tree-item {

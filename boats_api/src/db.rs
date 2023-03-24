@@ -119,12 +119,10 @@ impl DB {
     }
 
     pub async fn get_all_trees_around(&self, lat: f32, long: f32) -> Result<Vec<Object>, crate::error::Error> {
-        let sql = "SELECT * FROM trees WHERE geo::distance(position, $from) < 10;";
+        let sql = "SELECT * FROM trees WHERE geo::distance(position, $from) < 7;";
 
         let vars: BTreeMap<String, Value> = map![
             "from".into() => Value::Geometry((lat.into(), long.into()).into()),
-            // "lat".into() => Value::Number(lat.into()),
-            // "long".into() => Value::Number(long.into()),
         ];
         let res = self.execute(sql, Some(vars)).await?;
 
@@ -133,6 +131,19 @@ impl DB {
         let array: Array = W(first_res.result?).try_into()?;
 
         array.into_iter().map(|value| W(value).try_into()).collect()
+    }
+
+    pub async fn get_proximity(&self, lat: f32, long: f32) -> Result<Object, crate::error::Error> {
+        let sql = "SELECT math::min(geo::distance(position, $from)) as closest FROM trees;";
+
+        let vars: BTreeMap<String, Value> = map![
+            "from".into() => Value::Geometry((lat.into(), long.into()).into()),
+        ];
+        let res = self.execute(sql, Some(vars)).await?;
+
+        let first_res = res.into_iter().next().expect("Did not get a response");
+
+        W(first_res.result?.first()).try_into()
     }
 
     pub async fn delete_message(&self, id: String) -> Result<AffectedRows, crate::error::Error> {

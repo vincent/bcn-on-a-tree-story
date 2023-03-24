@@ -16,6 +16,16 @@ mod prelude;
 mod utils;
 mod cors;
 
+#[get("/near/<lat>/<long>")]
+async fn get_proximity(lat: f32, long: f32, db: &State<DB>) -> Result<Json<Object>, std::io::Error> {
+    let result = db
+        .get_proximity(lat, long)
+        .await
+        .map_err(|e| std::io::Error::new(ErrorKind::Other, format!("Unable to fetch proximity: {}", e)))?;
+
+    Ok(Json(result))
+}
+
 #[get("/trees/<lat>/<long>")]
 async fn get_all_trees(lat: f32, long: f32, db: &State<DB>) -> Result<Json<Vec<Object>>, std::io::Error> {
     let messages = db
@@ -66,7 +76,7 @@ async fn rocket() -> _ {
     rocket::build()
         .mount(
             "/",
-            routes![get_all_trees, add_message, get_all_messages, delete_message],
+            routes![get_proximity, get_all_trees, add_message, get_all_messages, delete_message],
         )
         .attach(CORS)
         .manage(db)

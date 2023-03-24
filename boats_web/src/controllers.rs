@@ -29,6 +29,14 @@ impl MessageController {
         })
     }
 
+    pub fn update_proximity(&self, lat: f64, long: f64) {
+        let messages = self.state.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            let proximity = boats_api::closest(lat, long).await;
+            messages.dispatch(Action::UpdateProximity(proximity));
+        })
+    }
+
     pub fn init_messages(&self, tree: Tree) {
         let messages = self.state.clone();
         wasm_bindgen_futures::spawn_local(async move {
@@ -67,7 +75,9 @@ impl MessageController {
     pub fn open_search(&self, query: String) {
         let glg = String::from("https://www.google.com/search?q=");
         wasm_bindgen_futures::spawn_local(async move {
-            window().unwrap().open_with_url_and_target((glg + &query).as_str(), "_blank");
+            if let Err(_e) = window().unwrap().open_with_url_and_target((glg + &query).as_str(), "_blank") {
+                // 
+            }
         })
     }
 }
