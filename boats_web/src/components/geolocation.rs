@@ -37,7 +37,9 @@ pub fn geolocation(
             if geo.loading {
                 { "waiting for geolocation... please ?" }
             } else {
-                <small>{ geo.latitude }{ " : " } { geo.longitude }</small>
+                <small>
+                    // { geo.latitude }{ " : " } { geo.longitude }
+                </small>
             }
         </div>
     }
