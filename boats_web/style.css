@@ -6,8 +6,12 @@ body {
 
 .container {
     display: block;
-    width: 400px;
+    max-width: 1000px;
     margin: 50px auto 0 auto;
+}
+
+.container, container > * {
+    font-size: 40px;
 }
 
 .center {
@@ -93,9 +97,9 @@ li {
 }
 
 li>label {
-    font-size: 18px;
-    line-height: 40px;
-    width: 285px;
+    /* font-size: 18px; */
+    /* line-height: 40px; */
+    /* width: 285px; */
     padding: 0 0 0 10px;
 }
 
@@ -105,7 +109,40 @@ li>label {
     color: #888;
 }
 
+/* geo */
+.waiting-geo {
+    margin-bottom: 2em;
+}
+
+/* intro */
+.intro {
+    height: 1.1em;
+    overflow: hidden;
+}
+.intro.open {
+    height: 1000px;
+    transition: all 20s 0.5s;
+    transition-timing-function: steps(20, start);
+}
+
+
 /* trees */
 .tree-item {
     margin: 15px 0;
+}
+.tree-item:hover {
+    border-left: 1px solid #888;
+}
+.tree-item:hover * {
+    cursor: pointer;
+}
+
+.selection {
+    padding: 1em;
+    /* box-shadow: 0px 4px 7px 0px #222; */
+}
+
+/* form */
+.message-form {
+    margin: 25px 5px 20px 5px;
 }

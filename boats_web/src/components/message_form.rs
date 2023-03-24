@@ -32,7 +32,7 @@ pub fn tree_form(MessageFormProps { current_tree_id, on_create_message }: &Messa
 
     html!(
         <div>
-            <div class="center">
+            <div class="center message-form">
                 <input ref={tree_id_node_ref} value={current_tree_id.clone()} type="hidden" />
                 <input ref={input_node_ref} id="new-tree" type="text" placeholder={ "Write me something nice" } />
                 <button onclick={on_click}>{"Add"}</button>

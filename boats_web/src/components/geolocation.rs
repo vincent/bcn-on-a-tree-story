@@ -32,9 +32,13 @@ pub fn geolocation(
 
     throttle.run();
 
-    if geo.loading {
-        html! { "waiting for geolocation... please ?" }
-    } else {
-        html! { <small>{ geo.latitude }{ " : " } { geo.longitude }</small> }
+    html! {
+        <div class="waiting-geo">
+            if geo.loading {
+                { "waiting for geolocation... please ?" }
+            } else {
+                <small>{ geo.latitude }{ " : " } { geo.longitude }</small>
+            }
+        </div>
     }
 }

@@ -16,6 +16,7 @@ pub fn message_list(
         on_select_tree,
     }: &TreeListProps,
 ) -> Html {
+    let trees_count = trees.len();
     let trees: Html = trees
         .iter()
         .map(|tree| html!( <TreeItem tree={tree.clone()} on_select_tree={on_select_tree} /> ))
@@ -23,6 +24,13 @@ pub fn message_list(
 
     html!(
         <ul id="message-list">
+            if trees_count == 1 {
+                <li>{ "Nearby, there is a tree" }</li>
+            }
+            if trees_count > 1 {
+                <li>{ "Nearby, there are some trees" }</li>
+            }
+
             {trees}
         </ul>
     )

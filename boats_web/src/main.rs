@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use web_sys::HtmlElement;
 use yew::prelude::*;
 
 mod boats_api;
@@ -6,12 +7,13 @@ mod components;
 mod controllers;
 mod models;
 mod state;
+mod data;
 
 use components::*;
 use controllers::*;
 use state::*;
 
-use crate::models::Tree;
+use crate::{models::Tree, data::random_intro};
 
 #[function_component(App)]
 fn app() -> Html {
@@ -46,21 +48,55 @@ fn app() -> Html {
         })
     };
 
+    let on_show_more = {
+        let messages_controller = messages_controller.clone();
+        Callback::from(move |tree: Tree| {
+            messages_controller.open_search(tree.name_sci.unwrap_or_default());
+        })
+    };
+
+    let on_back_to_list = {
+        let messages_controller = messages_controller.clone();
+        Callback::from(move |_e: MouseEvent| {
+            messages_controller.clear_selection();
+        })
+    };
+
+    let intro_node_ref = use_node_ref();
+    let on_intro_continue = {
+        let intro_node_ref = intro_node_ref.clone();
+        Callback::from(move |_e: MouseEvent| {
+            if let Some(intro) = intro_node_ref.cast::<HtmlElement>() {
+                intro.set_class_name("intro open");
+            } 
+        })
+    };
+
     html! {
         <div class="container">
             <h1>{ "Based On A Tree Story" }</h1>
 
             <Geolocation on_coords_change={on_coords_change} />
 
-            <TreeList trees={messages.trees.clone()} on_select_tree={on_select_tree} />
-
             if let Some(tree) = &messages.current_tree {
-                <MessageForm current_tree_id={tree.tree_id.clone()} on_create_message={on_create_message} />
+                <div class="selection">
+                    <span onclick={on_back_to_list}>{"⮪"}</span>
+                    <TreeInfos tree={tree.clone()} on_show_more={on_show_more} />
+                    <MessageForm current_tree_id={tree.tree_id.clone()} on_create_message={on_create_message} />
 
-                <MessageList
-                    messages={messages.messages.clone()}
-                    on_delete_message={on_delete_message}
-                />
+                    <MessageList
+                        messages={messages.messages.clone()}
+                        on_delete_message={on_delete_message}
+                    />
+                </div>
+
+            } else if messages.trees.len() > 0 {
+                    <TreeList trees={messages.trees.clone()} on_select_tree={on_select_tree} />
+
+            } else {
+                <div ref={intro_node_ref} class="intro" onclick={on_intro_continue}>
+                    <SafeHtml html={random_intro()} />
+                </div>
             }
         </div>
     }

@@ -2,6 +2,7 @@ use crate::{
     state::{Action, MessageState},
     boats_api, models::Tree,
 };
+use web_sys::window;
 use yew::UseReducerHandle;
 
 pub struct MessageController {
@@ -19,12 +20,12 @@ impl MessageController {
             let trees = boats_api::fetch_trees(lat, long).await.unwrap();
             messages.dispatch(Action::ListNearbyTrees(trees.clone()));
 
-            if trees.len() == 1 {
-                if let Some(tree) = trees.first() {
-                    messages.dispatch(Action::ChooseTree(tree.clone()));
-                    // self.init_messages(tree.clone());
-                }
-            }
+            // if trees.len() == 1 {
+            //     if let Some(tree) = trees.first() {
+            //         messages.dispatch(Action::ChooseTree(tree.clone()));
+            //         // self.init_messages(tree.clone());
+            //     }
+            // }
         })
     }
 
@@ -32,8 +33,8 @@ impl MessageController {
         let messages = self.state.clone();
         wasm_bindgen_futures::spawn_local(async move {
             let fetched_messages = boats_api::fetch_messages(&tree.tree_id).await.unwrap();
-            messages.dispatch(Action::ShowMessages(fetched_messages))
-            // messages.dispatch(Action::ChooseTree(tree.clone()));
+            messages.dispatch(Action::ShowMessages(fetched_messages));
+            messages.dispatch(Action::ChooseTree(tree.clone()));
         })
     }
 
@@ -53,6 +54,20 @@ impl MessageController {
             if response.rows_affected == 1 {
                 messages.dispatch(Action::DeleteMessageFromTree(tree_id, id.clone()))
             }
+        })
+    }
+
+    pub fn clear_selection(&self) {
+        let messages = self.state.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            messages.dispatch(Action::ClearSelection())
+        })
+    }
+
+    pub fn open_search(&self, query: String) {
+        let glg = String::from("https://www.google.com/search?q=");
+        wasm_bindgen_futures::spawn_local(async move {
+            window().unwrap().open_with_url_and_target((glg + &query).as_str(), "_blank");
         })
     }
 }

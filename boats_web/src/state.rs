@@ -9,6 +9,7 @@ pub enum Action {
     HideMessages(),
     ListNearbyTrees(Vec<Tree>),
     ChooseTree(Tree),
+    ClearSelection(),
     ListenTree(String),
     WriteMessageOnTree(String, Message),
     DeleteMessageFromTree(String, String),
@@ -76,6 +77,11 @@ impl Reducible for MessageState {
             }
             Action::ChooseTree(tree) => {
                 next_current_tree = Some(tree);
+                next_messages = self.messages.clone();
+                next_trees = self.trees.clone();
+            }
+            Action::ClearSelection() => {
+                next_current_tree = None;
                 next_messages = self.messages.clone();
                 next_trees = self.trees.clone();
             }
