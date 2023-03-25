@@ -34,13 +34,13 @@ pub fn geolocation(
 
     html! {
         <div class="waiting-geo">
-            if geo.loading {
-                { "waiting for geolocation... please ?" }
-            } else {
-                <small>
-                    // { geo.latitude }{ " : " } { geo.longitude }
-                </small>
-            }
+            // if geo.loading {
+            //     { "waiting for geolocation... please ?" }
+            // } else {
+            //     <small>
+            //         // { geo.latitude }{ " : " } { geo.longitude }
+            //     </small>
+            // }
         </div>
     }
 }

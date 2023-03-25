@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 wasm-bindgen = "0.2.74"
 wasm-bindgen-futures = "0.4"
-web-sys = { version = "0.3.61", features=["console", "SvgElement", "CssStyleDeclaration"] }
+web-sys = { version = "0.3.61", features=["console", "Event", "EventTarget", "HtmlFormElement", "SvgElement", "CssStyleDeclaration"] }
 yew = { version = "0.20", features=["csr"] }
 yew-hooks = { version = "0.2.0" }
 reqwasm = "0.2"

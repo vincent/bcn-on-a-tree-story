@@ -5,15 +5,15 @@ use yew::prelude::*;
 mod boats_api;
 mod components;
 mod controllers;
+mod data;
 mod models;
 mod state;
-mod data;
 
 use components::*;
 use controllers::*;
 use state::*;
 
-use crate::{models::Tree, data::random_intro};
+use crate::models::Tree;
 
 #[function_component(App)]
 fn app() -> Html {
@@ -45,7 +45,16 @@ fn app() -> Html {
 
     let on_select_tree = {
         let messages_controller = messages_controller.clone();
+        let messages = messages.clone();
+
         Callback::from(move |tree: Tree| {
+            let window = web_sys::window().expect("global window does not exists");    
+            let document = window.document().expect("expecting a document on window");
+            let body = document.body().expect("expecting a body on document");
+
+            let color = vec![ "bg1", "bg2", "bg3", "bg4", "bg5" ][messages.inc];
+            body.set_class_name(color);
+
             messages_controller.init_messages(tree);
         })
     };
@@ -70,37 +79,52 @@ fn app() -> Html {
         Callback::from(move |_e: MouseEvent| {
             if let Some(intro) = intro_node_ref.cast::<HtmlElement>() {
                 intro.set_class_name("intro open");
-            } 
+            }
         })
     };
 
     html! {
-        <div class="container">
-            // <AnimatedTree completion={proximity} />
-            <h1>{ "Based On A Tree Story" }</h1>
+        <div class="app">
+            <TreeListPlayer
+                waiting={messages.waiting}
+                trees={messages.trees.clone()}
+                selected_tree={messages.current_tree.clone()}
+                on_select_tree={on_select_tree}
+                on_show_more={on_show_more}
+                messages={messages.messages.clone()}
+                on_create_message={on_create_message}
+                on_delete_message={on_delete_message}
+            />
 
             <Geolocation on_coords_change={on_coords_change} />
 
-            if let Some(tree) = &messages.current_tree {
-                <div class="selection">
-                    <span onclick={on_back_to_list}>{"⮪"}</span>
-                    <TreeInfos tree={tree.clone()} on_show_more={on_show_more} />
-                    <MessageForm current_tree_id={tree.tree_id.clone()} on_create_message={on_create_message} />
 
-                    <MessageList
-                        messages={messages.messages.clone()}
-                        on_delete_message={on_delete_message}
-                    />
-                </div>
+        // <div class="container">
+        //     // <AnimatedTree completion={proximity} />
 
-            } else if messages.trees.len() > 0 {
-                    <TreeList trees={messages.trees.clone()} on_select_tree={on_select_tree} />
+        //     <Geolocation on_coords_change={on_coords_change} />
 
-            } else {
-                <div ref={intro_node_ref} class="intro" onclick={on_intro_continue}>
-                    <SafeHtml html={random_intro()} />
-                </div>
-            }
+        //     if let Some(tree) = &messages.current_tree {
+        //         <div class="selection">
+        //             <span onclick={on_back_to_list}>{"⮪"}</span>
+        //             <TreeInfos tree={tree.clone()} on_show_more={on_show_more} />
+        //             <MessageForm current_tree_id={tree.tree_id.clone()} on_create_message={on_create_message} />
+
+        //             <MessageList
+        //                 messages={messages.messages.clone()}
+        //                 on_delete_message={on_delete_message}
+        //             />
+        //         </div>
+
+        //     } else if messages.trees.len() > 0 {
+        //             <TreeList trees={messages.trees.clone()} on_select_tree={on_select_tree} />
+
+        //     } else {
+        //         <div ref={intro_node_ref} class="intro" onclick={on_intro_continue}>
+        //             <SafeHtml html={random_intro()} />
+        //         </div>
+        //     }
+        // </div>
         </div>
     }
 }

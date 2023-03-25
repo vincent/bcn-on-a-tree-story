@@ -21,6 +21,8 @@ pub struct MessageState {
     pub trees: Vec<Tree>,
     pub messages: Vec<Message>,
     pub proximity: i32,
+    pub waiting: bool,
+    pub inc: usize,
 }
 
 impl Default for MessageState {
@@ -29,7 +31,9 @@ impl Default for MessageState {
             current_tree: None,
             messages: vec![],
             trees: vec![],
+            waiting: true,
             proximity: 0,
+            inc: 0,
         }
     }
 }
@@ -42,6 +46,7 @@ impl Reducible for MessageState {
         let mut next_messages = self.messages.clone();
         let mut next_proximity = self.proximity;
         let mut next_trees = self.trees.clone();
+        let mut next_waiting = self.waiting.clone();
 
         match action {
             Action::ShowMessages(messages) => {
@@ -65,6 +70,7 @@ impl Reducible for MessageState {
                     next_current_tree = Some(trees.first().unwrap().clone());
                 }
                 next_trees = trees;
+                next_waiting = false;
             }
             Action::UpdateProximity(proximity) => {
                 next_proximity = proximity
@@ -78,9 +84,11 @@ impl Reducible for MessageState {
         };
 
         Self {
+            inc: (self.inc + 1) % 5,
             current_tree: next_current_tree,
             proximity: next_proximity,
             messages: next_messages,
+            waiting: next_waiting,
             trees: next_trees,
         }.into()
     }
