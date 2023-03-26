@@ -1,7 +1,7 @@
-use std::{collections::BTreeMap, sync::Arc};
-
+use std::{collections::BTreeMap, sync::Arc, io::ErrorKind};
 use crate::{prelude::W, utils::macros::map};
 
+use rand::seq::SliceRandom;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use surrealdb::{
@@ -153,5 +153,62 @@ impl DB {
         let _ = self.execute(sql, Some(vars)).await?;
 
         Ok(AffectedRows { rows_affected: 1 })
+    }
+
+    pub async fn known_images_of(&self, sci_name: String) -> Result<Vec<Object>, crate::error::Error> {
+        let sql = "SELECT url FROM images WHERE tree_name = $tree_name;";
+
+        let vars: BTreeMap<String, Value> = map![
+            "tree_name".into() => Value::Strand(sci_name.into()),
+        ];
+        let res = self.execute(sql, Some(vars)).await?;
+
+        let first_res = res.into_iter().next().expect("Did not get a response");
+
+        let array: Array = W(first_res.result?).try_into()?;
+
+        array.into_iter().map(|value| W(value).try_into()).collect()
+    }
+
+    pub async fn images_of(&self, sci_name: String) -> Result<Vec<String>, crate::error::Error> {
+        if let Ok(urls) = self.known_images_of(sci_name.clone()).await {
+            if !urls.is_empty() {
+                let urls = urls
+                    .iter()
+                    .map(|o| o.first_key_value().unwrap().1.to_owned().as_string())
+                    .collect();
+                return Ok(urls);
+            }
+        }
+
+        let urls = crate::images::images_of(&sci_name)
+            .await
+            .map_err(|_| std::io::Error::new(ErrorKind::Other, "Unable to fetch all messages."))?;
+
+        if urls.is_empty() {
+            return Ok(vec![]);
+        }
+
+        for url in urls.iter() {
+            let sql = "CREATE images SET tree_name = $tree_name, url = $url;";
+            let vars: BTreeMap<String, Value> = map![
+                "tree_name".into() => Value::Strand(sci_name.to_owned().into()),
+                "url".into()       => Value::Strand(url.to_owned().into()),
+            ];
+    
+            let res = self.execute(sql, Some(vars)).await?;
+            let first_res = res.into_iter().next().expect("Did not get a response");
+            println!("insert image {}", first_res.result?.first().single());
+        }
+    
+        Ok(urls)
+    }
+
+    pub async fn image_of(&self, sci_name: String) -> Result<String, crate::error::Error> {
+        Ok(self.images_of(sci_name)
+            .await?
+            .choose(&mut rand::thread_rng())
+            .unwrap_or(&"https://en.wikipedia.org/wiki/Tree#/media/File:Buk1.JPG".to_owned())
+            .to_string())
     }
 }

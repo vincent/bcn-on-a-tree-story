@@ -123,7 +123,7 @@ pub fn tree_list_player(
             };
             html!(
                 <label class={classes!(position_class, "card")} for={tree.tree_id.clone()} id={"song-".to_owned() + &tree.tree_id.clone()}>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/London_Plane_Whole.jpg/802px-London_Plane_Whole.jpg" alt="Tree" />
+                    <img src={"/api/img/".to_owned() + tree.name_sci.clone().unwrap().as_mut_str()} alt="Tree" />
                 </label>
             )
         })
@@ -142,6 +142,9 @@ pub fn tree_list_player(
                     if waiting.to_owned() {
                         {"Waiting for geolocation"}<br />
                         {"Looking for trees around you ..."}
+
+                    } else if trees.len() < 1 {
+                        {"Come closer ..."}
 
                     } else {
                         <div class="info-area">
