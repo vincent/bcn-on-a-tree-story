@@ -27,10 +27,10 @@ async fn get_proximity(lat: f32, long: f32, db: &State<DB>) -> Result<Json<Objec
     Ok(Json(result))
 }
 
-#[get("/trees/<lat>/<long>")]
-async fn get_all_trees(lat: f32, long: f32, db: &State<DB>) -> Result<Json<Vec<Object>>, std::io::Error> {
+#[get("/trees/<lat>/<long>/<distance>")]
+async fn get_all_trees(lat: f32, long: f32, distance: i32, db: &State<DB>) -> Result<Json<Vec<Object>>, std::io::Error> {
     let messages = db
-        .get_all_trees_around(lat, long)
+        .get_all_trees_around(lat, long, distance)
         .await
         .map_err(|e| std::io::Error::new(ErrorKind::Other, format!("Unable to fetch trees: {}", e)))?;
 

@@ -118,11 +118,12 @@ impl DB {
         array.into_iter().map(|value| W(value).try_into()).collect()
     }
 
-    pub async fn get_all_trees_around(&self, lat: f32, long: f32) -> Result<Vec<Object>, crate::error::Error> {
-        let sql = "SELECT * FROM trees WHERE geo::distance(position, $from) < 7;";
+    pub async fn get_all_trees_around(&self, lat: f32, long: f32, distance: i32) -> Result<Vec<Object>, crate::error::Error> {
+        let sql = "SELECT * FROM trees WHERE geo::distance(position, $from) < $distance;";
 
         let vars: BTreeMap<String, Value> = map![
             "from".into() => Value::Geometry((lat.into(), long.into()).into()),
+            "distance".into() => Value::Number(distance.into()),
         ];
         let res = self.execute(sql, Some(vars)).await?;
 
