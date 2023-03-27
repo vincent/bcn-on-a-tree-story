@@ -44,23 +44,18 @@ async fn get_chat_gpt_response(prompt: &str) -> Result<String, reqwest::Error> {
     Ok(response.choices[0].message.content.clone())
 }
 
-fn main() {
+pub async fn text_of(lang: &str, name_sci: &str, neighbourhood: &str) -> Result<String, reqwest::Error> {
     let prompt = format!(r#"
 I want you to act like a poetic tree. 
 You will use sweet and comforting words for people passing by.
-Your answers will take into account the specie of tree, and the location I will give.
+Your answers will take into account the language ISO code, the specie of tree, and the location I will give.
 You will not use the specie name directly.
 You will use the specie family name.
 You will notuse the specie name directly.
 You will use the surrounding names.
 
-My request is: "You are a {}, at {}, Barcelone"
-"#, "Populus nigra", "LA TRINITAT VELLA");
+My request is: [In the language code "{}", you are a "{}", at "{}"]
+"#, lang, name_sci, neighbourhood);
 
-    let response = tokio::runtime::Runtime::new()
-        .unwrap()
-        .block_on(get_chat_gpt_response(&prompt))
-        .unwrap();
-
-    println!("{}", response);
+    get_chat_gpt_response(&prompt).await
 }

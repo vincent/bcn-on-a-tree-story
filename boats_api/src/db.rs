@@ -218,4 +218,63 @@ impl DB {
             .unwrap_or(&"https://en.wikipedia.org/wiki/Tree#/media/File:Buk1.JPG".to_owned())
             .to_string())
     }
+
+    pub async fn known_prompts_of(&self, lang: String, sci_name: String, _neighbourhood: String) -> Result<Vec<Object>, crate::error::Error> {
+        let sql = "SELECT text FROM prompts WHERE lang = $lang AND tree_name = $tree_name;";
+
+        let vars: BTreeMap<String, Value> = map![
+            "tree_name".into() => Value::Strand(sci_name.into()),
+            "lang".into() => Value::Strand(lang.into()),
+        ];
+        let res = self.execute(sql, Some(vars)).await?;
+
+        let first_res = res.into_iter().next().expect("Did not get a response");
+
+        let array: Array = W(first_res.result?).try_into()?;
+
+        array.into_iter().map(|value| W(value).try_into()).collect()
+    }
+
+    pub async fn prompt_of(&self, lang: String, sci_name: String, neighbourhood: String) -> Result<String, crate::error::Error> {
+
+        // let sql = "DELETE prompts;";
+        // let res = self.execute(sql, None).await?;
+        // let first_res = res.into_iter().next().expect("Did not get a response");
+        // println!("delete prompts {}", first_res.result?.first().single());
+
+        if let Ok(texts) = self.known_prompts_of(lang.clone(), sci_name.clone(), neighbourhood).await {
+            if !texts.is_empty() {
+                let default = &"I have nothing to say yet".to_owned();
+                let texts = texts
+                    .iter()
+                    .map(|o| o.first_key_value().unwrap().1.to_owned().as_string())
+                    .collect::<Vec<_>>();
+                let text = texts
+                    .choose(&mut rand::thread_rng())
+                    .unwrap_or(default);
+                return Ok(text.to_string());
+            }
+        }
+
+        let text = crate::ai::text_of(&lang, &sci_name, "Barcelona")
+            .await
+            .map_err(|_| std::io::Error::new(ErrorKind::Other, "Unable to fetch all messages."))?;
+
+        if text.is_empty() {
+            return Ok("I have nothing to say yet".to_string());
+        }
+
+        let sql = "CREATE prompts SET lang = $lang, tree_name = $tree_name, text = $text;";
+        let vars: BTreeMap<String, Value> = map![
+            "tree_name".into() => Value::Strand(sci_name.to_owned().into()),
+            "text".into()      => Value::Strand(text.to_owned().into()),
+            "lang".into()      => Value::Strand(lang.to_owned().into()),
+        ];
+
+        let res = self.execute(sql, Some(vars)).await?;
+        let first_res = res.into_iter().next().expect("Did not get a response");
+        println!("insert prompt {}", first_res.result?.first().single());
+    
+        Ok(text)
+    }
 }

@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
-use rocket::{serde::json::Json, State, response::Redirect, http::uri::{Uri, Absolute}};
+use rocket::{serde::json::Json, State, response::Redirect};
 
 use std::{io::ErrorKind, sync::Arc};
 use url::Url;
@@ -17,6 +17,7 @@ mod prelude;
 mod utils;
 mod cors;
 mod images;
+mod ai;
 
 #[get("/near/<lat>/<long>")]
 async fn get_proximity(lat: f32, long: f32, db: &State<DB>) -> Result<Json<Object>, std::io::Error> {
@@ -69,6 +70,16 @@ async fn get_tree_picture(sci_name: String, db: &State<DB>) -> Redirect {
     Redirect::permanent(parsed_url.to_string())
 }
 
+#[get("/txt/<lang>/<sci_name>/<nei_name>")]
+async fn get_tree_text(lang: String, sci_name: String, nei_name: String, db: &State<DB>) -> Result<Json<String>, std::io::Error> {
+    let txt = db
+        .prompt_of(lang, sci_name, nei_name)
+        .await
+        .unwrap();
+
+    Ok(Json(txt))
+}
+
 #[delete("/message/<id>")]
 async fn delete_message(id: String, db: &State<DB>) -> Result<Json<AffectedRows>, std::io::Error> {
     let affected_rows = db
@@ -89,7 +100,7 @@ async fn rocket() -> _ {
     rocket::build()
         .mount(
             "/",
-            routes![get_proximity, get_all_trees, get_tree_picture, add_message, get_all_messages, delete_message],
+            routes![get_proximity, get_all_trees, get_tree_picture, get_tree_text, add_message, get_all_messages, delete_message],
         )
         .attach(CORS)
         .manage(db)
