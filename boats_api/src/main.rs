@@ -1,9 +1,10 @@
 #[macro_use]
 extern crate rocket;
 
-use rocket::{serde::json::Json, State, response::Redirect};
+use rocket::{serde::json::Json, State, response::Redirect, http::uri::{Uri, Absolute}};
 
 use std::{io::ErrorKind, sync::Arc};
+use url::Url;
 use surrealdb::{sql::Object, Datastore, Session};
 
 use crate::db::{AffectedRows, DB};
@@ -64,7 +65,8 @@ async fn get_tree_picture(sci_name: String, db: &State<DB>) -> Redirect {
         .await
         .unwrap();
 
-    Redirect::to(url)
+    let parsed_url = Url::parse(url.as_str()).unwrap();
+    Redirect::permanent(parsed_url.to_string())
 }
 
 #[delete("/message/<id>")]

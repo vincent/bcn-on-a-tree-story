@@ -172,6 +172,12 @@ impl DB {
     }
 
     pub async fn images_of(&self, sci_name: String) -> Result<Vec<String>, crate::error::Error> {
+
+        // let sql = "DELETE images;";
+        // let res = self.execute(sql, None).await?;
+        // let first_res = res.into_iter().next().expect("Did not get a response");
+        // println!("delete images {}", first_res.result?.first().single());
+
         if let Ok(urls) = self.known_images_of(sci_name.clone()).await {
             if !urls.is_empty() {
                 let urls = urls
