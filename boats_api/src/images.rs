@@ -51,7 +51,10 @@ async fn find_images_on_first_page(query: &str) -> Result<HashSet<String>, Box<d
         .await?;
 
     if response.titles.len() == 0 {
-        return Err(Box::new(std::io::Error::new(ErrorKind::Other, "Unable to fetch all messages.")));
+        return Err(Box::new(std::io::Error::new(
+            ErrorKind::Other,
+            "Unable to fetch all messages.",
+        )));
     }
 
     let title = response.titles[0].as_str();
@@ -74,10 +77,13 @@ async fn find_images_on_first_page(query: &str) -> Result<HashSet<String>, Box<d
         .await?;
 
     let (_title, page) = response.query.pages.into_iter().next().unwrap();
-    let image_titles: HashSet<String> = page.images
+    let image_titles: HashSet<String> = page
+        .images
         .into_iter()
         .map(|image| image.title.clone())
-        .filter(|name| !name.to_lowercase().contains("logo"))
+        .filter(|name| {
+            !(name.to_lowercase().contains("logo") || name.to_lowercase().contains("svg")|| name.to_lowercase().contains("icon"))
+        })
         .take(3)
         .collect();
 

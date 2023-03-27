@@ -5,6 +5,7 @@ use yew::Reducible;
 use crate::models::{Message, Tree};
 
 pub enum Action {
+    ShowTreeText(String),
     ShowMessages(Vec<Message>),
     HideMessages(),
     ListNearbyTrees(Vec<Tree>),
@@ -19,6 +20,7 @@ pub enum Action {
 pub struct MessageState {
     pub current_tree: Option<Tree>,
     pub trees: Vec<Tree>,
+    pub current_tree_text: Option<String>,
     pub messages: Vec<Message>,
     pub proximity: i32,
     pub waiting: bool,
@@ -30,6 +32,7 @@ impl Default for MessageState {
         Self {
             current_tree: None,
             messages: vec![],
+            current_tree_text: None,
             trees: vec![],
             waiting: true,
             proximity: 0,
@@ -42,6 +45,7 @@ impl Reducible for MessageState {
     type Action = Action;
 
     fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
+        let mut next_tree_text = None;
         let mut next_current_tree = self.current_tree.clone();
         let mut next_messages = self.messages.clone();
         let mut next_proximity = self.proximity;
@@ -78,6 +82,9 @@ impl Reducible for MessageState {
             Action::ChooseTree(tree) => {
                 next_current_tree = Some(tree);
             }
+            Action::ShowTreeText(text) => {
+                next_tree_text = Some(text);
+            }
             Action::ClearSelection() => {
                 next_current_tree = None;
             }
@@ -85,6 +92,7 @@ impl Reducible for MessageState {
 
         Self {
             inc: (self.inc + 1) % 5,
+            current_tree_text: next_tree_text,
             current_tree: next_current_tree,
             proximity: next_proximity,
             messages: next_messages,

@@ -10,9 +10,11 @@ pub struct TreeListProps {
     pub waiting: bool,
     pub trees: Vec<Tree>,
     pub selected_tree: Option<Tree>,
+    pub selected_tree_text: Option<String>,
     pub on_select_tree: Callback<Tree>,
     pub messages: Vec<Message>,
     pub on_show_more: Callback<Tree>,
+    pub on_show_tree_text: Callback<Tree>,
     pub on_create_message: Callback<(String, String)>,
     pub on_delete_message: Callback<(String, String)>,
 }
@@ -23,8 +25,10 @@ pub fn tree_list_player(
         trees,
         waiting,
         selected_tree,
+        selected_tree_text,
         messages,
         on_show_more,
+        on_show_tree_text,
         on_create_message,
         on_delete_message,
         on_select_tree,
@@ -61,10 +65,19 @@ pub fn tree_list_player(
 
     let own_selected_tree = selected_tree.clone();
     let on_click_tree = {
-        let on_select_tree = on_show_more.clone();
+        let on_show_more = on_show_more.clone();
         move |_| {
             let tree = own_selected_tree.clone().unwrap();
-            on_select_tree.emit(tree.clone())
+            on_show_more.emit(tree.clone())
+        }
+    };
+
+    let own_selected_tree = selected_tree.clone();
+    let on_player_click = {
+        let on_show_tree_text = on_show_tree_text.clone();
+        move |_| {
+            let tree = own_selected_tree.clone().unwrap();
+            on_show_tree_text.emit(tree.clone())
         }
     };
 
@@ -112,6 +125,21 @@ pub fn tree_list_player(
         })
         .collect();
 
+    let mut tree_infos: Html = html!(<div></div>);
+    if let Some(tree) = selected_tree {
+        tree_infos = html!(
+            <label class="song-info">
+                <div class="title">{tree.name_cat.clone()}</div>
+                <div class="sub-line">
+                    <div class="subtitle">
+                        if tree.name_es != tree.name_cat { {tree.name_es.clone()} }
+                    </div>
+                    <div class="time" onclick={on_click_tree.clone()}>{tree.name_sci.clone()}</div>
+                </div>
+            </label>
+        )
+    }
+
     let trees_cards: Html = trees.clone()
         .iter()
         .map(|tree| {
@@ -140,27 +168,39 @@ pub fn tree_list_player(
             <div class="player">
                 <div class="upper-part">
                     if waiting.to_owned() {
-                        {"Waiting for geolocation"}<br />
-                        {"Looking for trees around you ..."}
+                        <div class="song-info">
+                            <div class="title">
+                                {"Waiting for geolocation"}<br />
+                                {"Looking for trees around you ..."}
+                            </div>
+                        </div>
 
                     } else if trees.len() < 1 {
                         {"Come closer ..."}
 
                     } else {
-                        <div class="info-area">
-                            {trees_infos}
+                        <div class="tree-info-area">
+                            {tree_infos}
                         </div>
                     }
                 </div>
 
                 if let Some(tree) = selected_tree {
                     <div class="lower-part">
-                        <MessageForm current_tree_id={tree.tree_id.clone()} on_create_message={on_create_message} />
+                        <div class="play-icon" onclick={on_player_click}>
+                            {icon_play()}
+                        </div>
 
-                        <MessageList
-                            messages={messages.clone()}
-                            on_delete_message={on_delete_message}
-                        />
+                        if let Some(text) = selected_tree_text {
+                            <p>{ text }</p>
+                        }
+
+                        // <MessageForm current_tree_id={tree.tree_id.clone()} on_create_message={on_create_message} />
+
+                        // <MessageList
+                        //     messages={messages.clone()}
+                        //     on_delete_message={on_delete_message}
+                        // />
                     </div>                    
                 }
 
@@ -206,14 +246,12 @@ fn tree_positions(trees: Vec<Tree>, selected: Option<Tree>) -> (String, String, 
 
 pub fn icon_play() -> Html {
     html!(
-        <div class="play-icon">
-            <svg
-                width="20" height="20" fill="#2992dc" stroke="#2992dc" stroke-linecap="round" 
-                stroke-linejoin="round" stroke-width="2" 
-                class="feather feather-play" viewBox="0 0 24 24">
-                <defs/>
-                <path d="M5 3l14 9-14 9V3z"/>
-            </svg>
-        </div>
+        <svg
+            width="20" height="20" fill="#2992dc" stroke="#2992dc" stroke-linecap="round" 
+            stroke-linejoin="round" stroke-width="2" 
+            class="feather feather-play" viewBox="0 0 24 24">
+            <defs/>
+            <path d="M5 3l14 9-14 9V3z"/>
+        </svg>
     )
 }

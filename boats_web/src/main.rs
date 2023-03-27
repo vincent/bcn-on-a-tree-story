@@ -66,6 +66,19 @@ fn app() -> Html {
         })
     };
 
+    let on_show_tree_text = {
+        let messages_controller = messages_controller.clone();
+        Callback::from(move |tree: Tree| {
+            let window = web_sys::window().expect("global window does not exists");    
+
+            messages_controller.fetch_tree_text(
+                window.navigator().language().unwrap_or("english".to_string()),
+                tree.name_sci.unwrap_or_default(),
+                tree.neighbor.unwrap_or("Ciutat".to_string()) + &", Barcelona".to_string()
+            );
+        })
+    };
+
     let on_back_to_list = {
         let messages_controller = messages_controller.clone();
         Callback::from(move |_e: MouseEvent| {
@@ -89,11 +102,13 @@ fn app() -> Html {
                 waiting={messages.waiting}
                 trees={messages.trees.clone()}
                 selected_tree={messages.current_tree.clone()}
+                selected_tree_text={messages.current_tree_text.clone()}
                 on_select_tree={on_select_tree}
                 on_show_more={on_show_more}
                 messages={messages.messages.clone()}
                 on_create_message={on_create_message}
                 on_delete_message={on_delete_message}
+                on_show_tree_text={on_show_tree_text}
             />
 
             <Geolocation on_coords_change={on_coords_change} />

@@ -33,6 +33,15 @@ pub async fn closest(lat: f64, long: f64) -> i32 {
     }
 }
 
+pub async fn fetch_tree_text(lang: &str, sci_name: &str, nei_name: &str) -> Result<String, Error> {
+    Request::get(&format!("{BASE_URL}/txt/{lang}/{sci_name}/{nei_name}"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+}
+
 pub async fn fetch_messages(tree_id: &str) -> Result<Vec<Message>, Error> {
     Request::get(&format!("{BASE_URL}/messages/{tree_id}"))
         .send()

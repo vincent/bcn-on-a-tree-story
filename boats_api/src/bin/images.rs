@@ -47,7 +47,6 @@ struct Query {
 
 #[derive(Debug, Deserialize)]
 struct Page {
-    title: String,
     images: Vec<Image>,
 }
 

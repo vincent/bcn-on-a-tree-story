@@ -80,4 +80,12 @@ impl MessageController {
             }
         })
     }
+
+    pub fn fetch_tree_text(&self, lang: String, sci_name: String, nei_name: String) {
+        let messages = self.state.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            let text = boats_api::fetch_tree_text(&lang, &sci_name, &nei_name).await.unwrap();
+            messages.dispatch(Action::ShowTreeText(text));
+        })
+    }
 }
