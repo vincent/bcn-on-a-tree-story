@@ -1,3 +1,5 @@
+use std::env;
+
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -32,9 +34,15 @@ async fn get_chat_gpt_response(prompt: &str) -> Result<String, reqwest::Error> {
         temperature: 0.7,
     };
 
+    let api_key_name = "OPEN_API_KEY";
+    let api_key = match env::var(api_key_name) {
+        Ok(v) => v,
+        Err(e) => panic!("${} is not set ({})", api_key_name, e)
+    };
+
     let response = client
         .post("https://api.openai.com/v1/chat/completions")
-        .bearer_auth("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")
+        .bearer_auth(api_key)
         .json(&params)
         .send()
         .await?

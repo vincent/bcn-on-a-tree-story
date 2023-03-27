@@ -258,7 +258,7 @@ impl DB {
 
         let text = crate::ai::text_of(&lang, &sci_name, "Barcelona")
             .await
-            .map_err(|_| std::io::Error::new(ErrorKind::Other, "Unable to fetch all messages."))?;
+            .map_err(|e| std::io::Error::new(ErrorKind::Other, format!("Unable to fetch AI response: {}", e)))?;
 
         if text.is_empty() {
             return Ok("I have nothing to say yet".to_string());

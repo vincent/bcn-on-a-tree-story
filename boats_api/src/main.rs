@@ -11,13 +11,13 @@ use crate::db::{AffectedRows, DB};
 
 use cors::*;
 
+mod ai;
+mod cors;
 mod db;
 mod error;
+mod images;
 mod prelude;
 mod utils;
-mod cors;
-mod images;
-mod ai;
 
 #[get("/near/<lat>/<long>")]
 async fn get_proximity(lat: f32, long: f32, db: &State<DB>) -> Result<Json<Object>, std::io::Error> {
@@ -75,7 +75,7 @@ async fn get_tree_text(lang: String, sci_name: String, nei_name: String, db: &St
     let txt = db
         .prompt_of(lang, sci_name, nei_name)
         .await
-        .unwrap();
+        .unwrap_or("I have nothing to say yet".to_string());
 
     Ok(Json(txt))
 }
