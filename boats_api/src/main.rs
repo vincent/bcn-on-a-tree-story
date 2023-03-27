@@ -70,6 +70,16 @@ async fn get_tree_picture(sci_name: String, db: &State<DB>) -> Redirect {
     Redirect::permanent(parsed_url.to_string())
 }
 
+#[get("/delete/img/<sci_name>")]
+async fn delete_tree_pictures(sci_name: String, db: &State<DB>) -> Result<Json<AffectedRows>, std::io::Error> {
+    let affected_rows = db
+        .delete_images_of(sci_name)
+        .await
+        .unwrap();
+
+    Ok(Json(affected_rows))
+}
+
 #[get("/txt/<lang>/<sci_name>/<nei_name>")]
 async fn get_tree_text(lang: String, sci_name: String, nei_name: String, db: &State<DB>) -> Result<Json<String>, std::io::Error> {
     let txt = db
@@ -78,6 +88,16 @@ async fn get_tree_text(lang: String, sci_name: String, nei_name: String, db: &St
         .unwrap_or("I have nothing to say yet".to_string());
 
     Ok(Json(txt))
+}
+
+#[get("/delete/txt/<lang>/<sci_name>/<nei_name>")]
+async fn delete_tree_texts(lang: String, sci_name: String, nei_name: String, db: &State<DB>) -> Result<Json<AffectedRows>, std::io::Error> {
+    let affected_rows = db
+        .delete_prompts_of(lang, sci_name, nei_name)
+        .await
+        .unwrap();
+
+    Ok(Json(affected_rows))
 }
 
 #[delete("/message/<id>")]
@@ -100,7 +120,12 @@ async fn rocket() -> _ {
     rocket::build()
         .mount(
             "/",
-            routes![get_proximity, get_all_trees, get_tree_picture, get_tree_text, add_message, get_all_messages, delete_message],
+            routes![
+                get_proximity, get_all_trees,
+                get_tree_picture, delete_tree_pictures,
+                get_tree_text, delete_tree_texts,
+                add_message, get_all_messages, delete_message
+            ],
         )
         .attach(CORS)
         .manage(db)

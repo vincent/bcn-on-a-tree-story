@@ -156,6 +156,18 @@ impl DB {
         Ok(AffectedRows { rows_affected: 1 })
     }
 
+    pub async fn delete_images_of(&self, sci_name: String) -> Result<AffectedRows, crate::error::Error> {
+        let sql = "DELETE images WHERE tree_name = $tree_name;";
+
+        let vars: BTreeMap<String, Value> = map![
+            "tree_name".into() => Value::Strand(sci_name.into()),
+        ];
+
+        let _ = self.execute(sql, Some(vars)).await?;
+
+        Ok(AffectedRows { rows_affected: 1 })
+    }
+
     pub async fn known_images_of(&self, sci_name: String) -> Result<Vec<Object>, crate::error::Error> {
         let sql = "SELECT url FROM images WHERE tree_name = $tree_name;";
 
@@ -217,6 +229,19 @@ impl DB {
             .choose(&mut rand::thread_rng())
             .unwrap_or(&"https://en.wikipedia.org/wiki/Tree#/media/File:Buk1.JPG".to_owned())
             .to_string())
+    }
+
+    pub async fn delete_prompts_of(&self, lang: String, sci_name: String, _neighbourhood: String) -> Result<AffectedRows, crate::error::Error> {
+        let sql = "DELETE prompts WHERE lang = $lang AND tree_name = $tree_name;";
+
+        let vars: BTreeMap<String, Value> = map![
+            "tree_name".into() => Value::Strand(sci_name.into()),
+            "lang".into() => Value::Strand(lang.into()),
+        ];
+
+        let _ = self.execute(sql, Some(vars)).await?;
+
+        Ok(AffectedRows { rows_affected: 1 })
     }
 
     pub async fn known_prompts_of(&self, lang: String, sci_name: String, _neighbourhood: String) -> Result<Vec<Object>, crate::error::Error> {
