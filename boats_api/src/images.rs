@@ -81,8 +81,8 @@ async fn find_images_on_first_page(query: &str) -> Result<HashSet<String>, Box<d
         .images
         .into_iter()
         .map(|image| image.title.clone())
-        .filter(|name| {
-            !(name.to_lowercase().contains("logo") || name.to_lowercase().contains("svg")|| name.to_lowercase().contains("icon"))
+        .filter(|title| {
+            !(title.to_lowercase().contains("logo") || title.to_lowercase().contains("svg") || title.to_lowercase().contains("icon"))
         })
         .take(3)
         .collect();

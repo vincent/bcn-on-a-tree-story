@@ -20,12 +20,10 @@ impl MessageController {
             let trees = boats_api::fetch_trees(lat, long).await.unwrap();
             messages.dispatch(Action::ListNearbyTrees(trees.clone()));
 
-            // if trees.len() == 1 {
-            //     if let Some(tree) = trees.first() {
-            //         messages.dispatch(Action::ChooseTree(tree.clone()));
-            //         // self.init_messages(tree.clone());
-            //     }
-            // }
+            if let Some(tree) = trees.first() {
+                messages.dispatch(Action::ChooseTree(tree.clone()));
+                // self.init_messages(tree.clone());
+            }
         })
     }
 
@@ -65,6 +63,19 @@ impl MessageController {
         })
     }
 
+    pub fn delete_tree_media(&self, tree: Tree) {
+        wasm_bindgen_futures::spawn_local(async move {
+            boats_api::delete_tree_images(tree.name_sci.clone().unwrap_or("default".to_string())).await.unwrap();
+
+            let window = web_sys::window().expect("global window does not exists");    
+            boats_api::delete_tree_texts(
+                window.navigator().language().unwrap_or("english".to_string()),
+                tree.name_sci.unwrap_or_default(),
+                tree.neighbor.unwrap_or("Ciutat".to_string()) + &", Barcelona".to_string()
+            ).await.unwrap();
+        })
+    }
+
     pub fn clear_selection(&self) {
         let messages = self.state.clone();
         wasm_bindgen_futures::spawn_local(async move {
@@ -85,7 +96,18 @@ impl MessageController {
         let messages = self.state.clone();
         wasm_bindgen_futures::spawn_local(async move {
             let text = boats_api::fetch_tree_text(&lang, &sci_name, &nei_name).await.unwrap();
-            messages.dispatch(Action::ShowTreeText(text));
+            messages.dispatch(Action::ShowTreeText(text.clone()));
+
+            //
+
+            let window = web_sys::window().expect("global window does not exists");    
+            let synth = window.speech_synthesis().expect("global speech_synthesis does not exists");
+    
+            let utterance = web_sys::SpeechSynthesisUtterance::new().expect("cannot create a new utterance");
+            utterance.set_lang(&lang);
+            utterance.set_text(&text);
+    
+            synth.speak(&utterance)
         })
     }
 }

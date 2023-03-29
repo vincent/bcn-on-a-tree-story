@@ -6,11 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+log = "0.4.6"
+reqwasm = "0.2"
+wasm-logger = "0.2.0"
 wasm-bindgen = "0.2.74"
 wasm-bindgen-futures = "0.4"
-web-sys = { version = "0.3.61", features=["console", "Event", "EventTarget", "HtmlFormElement", "SvgElement", "CssStyleDeclaration"] }
-yew = { version = "0.20", features=["csr"] }
 yew-hooks = { version = "0.2.0" }
-reqwasm = "0.2"
+yew = { version = "0.20", features=["csr"] }
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde", "wasmbind"] }
+web-sys = { version = "0.3.61", features=["console", "Event", "EventTarget", "HtmlFormElement", "SvgElement", "CssStyleDeclaration", "SpeechSynthesis", "SpeechSynthesisUtterance"] }

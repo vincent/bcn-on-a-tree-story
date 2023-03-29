@@ -3,7 +3,7 @@ use web_sys::{MouseEvent, HtmlInputElement};
 use yew::{function_component, html, Callback, Html, Properties, classes, use_node_ref, use_effect_with_deps};
 use yew_hooks::prelude::*;
 
-use crate::{models::{Tree, Message}, components::{MessageList, MessageForm}};
+use crate::{models::{Tree, Message}, components::{MessageList, MessageForm, SafeHtml}};
 
 #[derive(Properties, PartialEq)]
 pub struct TreeListProps {
@@ -158,11 +158,13 @@ pub fn tree_list_player(
         .collect();
 
     html!(
-        <div class="container">
-            {trees_cbs}
+        <div>
+            <div class="container">
+                {trees_cbs}
 
-            <div class="cards" ref={cards}>
-                {trees_cards}
+                <div class="cards" ref={cards}>
+                    {trees_cards}
+                </div>
             </div>
 
             <div class="player">
@@ -192,7 +194,9 @@ pub fn tree_list_player(
                         </div>
 
                         if let Some(text) = selected_tree_text {
-                            <p>{ text }</p>
+                            <p class="tree-text">
+                                <br /><SafeHtml html={text.replace("\n", "<br/>")} />
+                            </p>
                         }
 
                         // <MessageForm current_tree_id={tree.tree_id.clone()} on_create_message={on_create_message} />

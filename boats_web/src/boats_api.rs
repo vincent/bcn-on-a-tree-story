@@ -68,3 +68,21 @@ pub async fn delete_message(id: String) -> Result<AffectedRows, Error> {
         .json()
         .await
 }
+
+pub async fn delete_tree_images(sci_name: String) -> Result<AffectedRows, Error> {
+    Request::get(&format!("{BASE_URL}/delete/img/{sci_name}"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+}
+
+pub async fn delete_tree_texts(lang: String, sci_name: String, nei_name: String) -> Result<AffectedRows, Error> {
+    Request::get(&format!("{BASE_URL}/delete/txt/{lang}/{sci_name}/{nei_name}"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+}
