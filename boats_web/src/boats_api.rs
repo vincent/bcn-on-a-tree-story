@@ -6,7 +6,7 @@ const BASE_URL: &str = "/api";
 pub async fn fetch_trees(lat: f64, long: f64) -> Result<Vec<Tree>, Error> {
     // let lat = 41.379368304896055;
     // let long = 2.1898975212208565;
-    Request::get(&format!("{BASE_URL}/trees/{lat}/{long}/3000"))
+    Request::get(&format!("{BASE_URL}/trees/{lat}/{long}/200"))
         .send()
         .await
         .unwrap()
