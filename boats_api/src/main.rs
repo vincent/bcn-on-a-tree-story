@@ -80,10 +80,10 @@ async fn delete_tree_pictures(sci_name: String, db: &State<DB>) -> Result<Json<A
     Ok(Json(affected_rows))
 }
 
-#[get("/txt/<lang>/<sci_name>/<nei_name>")]
-async fn get_tree_text(lang: String, sci_name: String, nei_name: String, db: &State<DB>) -> Result<Json<String>, std::io::Error> {
+#[get("/txt/<lang>/<tree_id>/<sci_name>/<nei_name>")]
+async fn get_tree_text(lang: String, tree_id: String, sci_name: String, nei_name: String, db: &State<DB>) -> Result<Json<String>, std::io::Error> {
     let txt = db
-        .prompt_of(lang, sci_name, nei_name)
+        .prompt_of(lang, tree_id, sci_name, nei_name)
         .await
         .unwrap_or("I have nothing to say yet".to_string());
 
@@ -116,6 +116,10 @@ async fn rocket() -> _ {
     let sesh = Session::for_db("my_ns", "my_db");
 
     let db = DB { ds, sesh };
+
+    let res = db.ds.execute("SELECT count() FROM trees GROUP BY ALL;", &db.sesh, None, false).await.expect("expected a result");
+    let first_res = res.into_iter().next().expect("Did not get a response");
+    println!("{} trees in database", first_res.result.expect("expected a result").first().single());
 
     rocket::build()
         .mount(

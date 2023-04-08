@@ -4,10 +4,18 @@ use crate::{prelude::W, utils::macros::map};
 use rand::seq::SliceRandom;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use surrealdb::{
     sql::{thing, Array, Object, Value, Geometry},
     Datastore, Response, Session,
 };
+
+fn calculate_hash<T: Hash>(t: &T) -> u64 {
+    let mut s = DefaultHasher::new();
+    t.hash(&mut s);
+    s.finish() % 3
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Tree {
@@ -244,12 +252,13 @@ impl DB {
         Ok(AffectedRows { rows_affected: 1 })
     }
 
-    pub async fn known_prompts_of(&self, lang: String, sci_name: String, _neighbourhood: String) -> Result<Vec<Object>, crate::error::Error> {
-        let sql = "SELECT text FROM prompts WHERE lang = $lang AND tree_name = $tree_name;";
+    pub async fn known_prompts_of(&self, lang: String, hash: u64, sci_name: String, _neighbourhood: String) -> Result<Vec<Object>, crate::error::Error> {
+        let sql = "SELECT text FROM prompts WHERE lang = $lang AND hash = $hash AND tree_name = $name;";
 
         let vars: BTreeMap<String, Value> = map![
-            "tree_name".into() => Value::Strand(sci_name.into()),
             "lang".into() => Value::Strand(lang.into()),
+            "name".into() => Value::Strand(sci_name.into()),
+            "hash".into() => Value::Number(hash.to_owned().into()),
         ];
         let res = self.execute(sql, Some(vars)).await?;
 
@@ -260,14 +269,15 @@ impl DB {
         array.into_iter().map(|value| W(value).try_into()).collect()
     }
 
-    pub async fn prompt_of(&self, lang: String, sci_name: String, neighbourhood: String) -> Result<String, crate::error::Error> {
+    pub async fn prompt_of(&self, lang: String, tree_id: String, sci_name: String, neighbourhood: String) -> Result<String, crate::error::Error> {
 
+        let hash = calculate_hash(&tree_id);
         // let sql = "DELETE prompts;";
         // let res = self.execute(sql, None).await?;
         // let first_res = res.into_iter().next().expect("Did not get a response");
         // println!("delete prompts {}", first_res.result?.first().single());
 
-        if let Ok(texts) = self.known_prompts_of(lang.clone(), sci_name.clone(), neighbourhood).await {
+        if let Ok(texts) = self.known_prompts_of(lang.clone(), hash, sci_name.clone(), neighbourhood).await {
             if !texts.is_empty() {
                 let default = &"I have nothing to say yet".to_owned();
                 let texts = texts
@@ -281,7 +291,7 @@ impl DB {
             }
         }
 
-        let text = crate::ai::text_of(&lang, &sci_name, "Barcelona")
+        let text = crate::ai::text_of(&lang, hash, &sci_name, "Barcelona")
             .await
             .map_err(|e| std::io::Error::new(ErrorKind::Other, format!("Unable to fetch AI response: {}", e)))?;
 
@@ -289,11 +299,12 @@ impl DB {
             return Ok("I have nothing to say yet".to_string());
         }
 
-        let sql = "CREATE prompts SET lang = $lang, tree_name = $tree_name, text = $text;";
+        let sql = "CREATE prompts SET lang = $lang, hash = $hash, tree_name = $tree_name, text = $text;";
         let vars: BTreeMap<String, Value> = map![
             "tree_name".into() => Value::Strand(sci_name.to_owned().into()),
             "text".into()      => Value::Strand(text.to_owned().into()),
             "lang".into()      => Value::Strand(lang.to_owned().into()),
+            "hash".into()      => Value::Number(hash.to_owned().into()),
         ];
 
         let res = self.execute(sql, Some(vars)).await?;

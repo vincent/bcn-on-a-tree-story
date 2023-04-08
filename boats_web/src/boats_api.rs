@@ -6,7 +6,7 @@ const BASE_URL: &str = "/api";
 pub async fn fetch_trees(lat: f64, long: f64) -> Result<Vec<Tree>, Error> {
     // let lat = 41.379368304896055;
     // let long = 2.1898975212208565;
-    Request::get(&format!("{BASE_URL}/trees/{lat}/{long}/100"))
+    Request::get(&format!("{BASE_URL}/trees/{lat}/{long}/3000"))
         .send()
         .await
         .unwrap()
@@ -33,8 +33,8 @@ pub async fn closest(lat: f64, long: f64) -> i32 {
     }
 }
 
-pub async fn fetch_tree_text(lang: &str, sci_name: &str, nei_name: &str) -> Result<String, Error> {
-    Request::get(&format!("{BASE_URL}/txt/{lang}/{sci_name}/{nei_name}"))
+pub async fn fetch_tree_text(lang: &str, tree_id: &str, sci_name: &str, nei_name: &str) -> Result<String, Error> {
+    Request::get(&format!("{BASE_URL}/txt/{lang}/{tree_id}/{sci_name}/{nei_name}"))
         .send()
         .await
         .unwrap()

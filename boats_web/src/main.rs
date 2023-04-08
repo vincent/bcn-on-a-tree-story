@@ -117,6 +117,7 @@ fn app() -> Html {
 
                 messages_controller.fetch_tree_text(
                     window.navigator().language().unwrap_or("english".to_string()),
+                    tree.tree_id,
                     tree.name_sci.unwrap_or_default(),
                     tree.neighbor.unwrap_or("Ciutat".to_string()) + &", Barcelona".to_string()
                 );

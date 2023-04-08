@@ -1,3 +1,4 @@
 [[proxy]]
 rewrite = "/api"
-backend = "https://boats.tat.wine/api"
+backend = "http://127.0.0.1:8081"
+# backend = "https://boats.tat.wine/api"
