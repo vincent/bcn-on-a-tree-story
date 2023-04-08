@@ -27,21 +27,21 @@ fn app() -> Html {
 
     let cards = use_node_ref();
 
-    let state = use_swipe(cards.clone());
-    {
-        let state = state.clone();
-        use_effect_with_deps(move |direction| {
-            // Do something based on direction.
-            match **direction {
-                UseSwipeDirection::Left => (),
-                UseSwipeDirection::Right => (),
-                UseSwipeDirection::Up => (),
-                UseSwipeDirection::Down => (),
-                _ => (),
-            }
-            || ()
-        }, state.direction);
-    }
+    // let state = use_swipe(cards.clone());
+    // {
+    //     let state = state.clone();
+    //     use_effect_with_deps(move |direction| {
+    //         // Do something based on direction.
+    //         match **direction {
+    //             UseSwipeDirection::Left => (),
+    //             UseSwipeDirection::Right => (),
+    //             UseSwipeDirection::Up => (),
+    //             UseSwipeDirection::Down => (),
+    //             _ => (),
+    //         }
+    //         || ()
+    //     }, state.direction);
+    // }
 
     // let on_create_message = {
     //     let messages_controller = messages_controller.clone();
